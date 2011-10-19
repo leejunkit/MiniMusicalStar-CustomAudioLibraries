@@ -11,6 +11,34 @@
 @implementation MixPlayerRecorder
 @synthesize numInputFiles, isPlaying, frameNum, totalNumFrames, totalPlaybackTimeInSeconds, elapsedPlaybackTimeInSeconds, stoppedBecauseReachedEnd, isRecording;
 
+void audioRouteChangeListenerCallback (
+                                       void                      *inUserData,
+                                       AudioSessionPropertyID    inPropertyID,
+                                       UInt32                    inPropertyValueSize,
+                                       const void                *inPropertyValue) 
+{
+    if (inPropertyID != kAudioSessionProperty_AudioRouteChange) return;
+    
+    MixPlayerRecorder *thePlayer = (MixPlayerRecorder*)inUserData;
+    
+    NSString *currentAudioRoute = [thePlayer getCurrentAudioRoute];
+    
+    NSRange speakerRange = [currentAudioRoute rangeOfString:@"Speaker"];
+    if (speakerRange.location != NSNotFound)
+    {
+        NSLog(@"now is Speaker");
+        [thePlayer setMicVolume:0];
+    }
+    
+    NSRange headphoneRange = [currentAudioRoute rangeOfString:@"Headphone"];
+    if (headphoneRange.location != NSNotFound)
+    {
+        NSLog(@"now is Headphone");
+        [thePlayer setMicVolume:1];
+    }
+}
+
+
 #pragma mark - audio callbacks and graph setup
 static OSStatus micRenderCallback(void                          *inRefCon, 
                                   AudioUnitRenderActionFlags 	*ioActionFlags, 
@@ -247,6 +275,13 @@ static OSStatus renderNotification(void *inRefCon,
         //printf("totalNumFrames is %lu\n", totalNumFrames);
     }
     
+    [[AVAudioSession sharedInstance] setDelegate: self];
+    
+    AudioSessionAddPropertyListener (
+                                     kAudioSessionProperty_AudioRouteChange,
+                                     audioRouteChangeListenerCallback,
+                                     self);
+    
     return self;
 }
 
@@ -263,6 +298,17 @@ static OSStatus renderNotification(void *inRefCon,
     //must do this because let's say if we were replaying again from the end, we need to tell the UI to "reset" the progress to 0 on start
     //if don't have this, we need to wait for the 1st second to update the UI
     [[NSNotificationCenter defaultCenter] postNotificationName:kMixPlayerRecorderPlaybackElapsedTimeAdvanced object:nil];
+
+    
+    NSString *currentAudioRoute = [self getCurrentAudioRoute];
+    
+    if ([currentAudioRoute isEqualToString:@"Speaker"])
+    {
+        [self setMicVolume:0];
+    } else if ([currentAudioRoute isEqualToString:@"Headphone"])
+    {
+        [self setMicVolume:1];
+    }
 }
 
 - (void)stop
@@ -356,6 +402,14 @@ static OSStatus renderNotification(void *inRefCon,
     [recorder start];
     isRecording = YES;
     
+    
+    if ([[self getCurrentAudioRoute] isEqualToString:@"Speaker"])
+    {
+        [self setMicVolume:0];
+    } else if ([[self getCurrentAudioRoute] isEqualToString:@"Headphones"])
+    {
+        [self setMicVolume:1];
+    }
 }
 
 - (void)setMicVolume:(AudioUnitParameterValue)vol
@@ -409,8 +463,31 @@ static OSStatus renderNotification(void *inRefCon,
 
 - (void)dealloc
 {
+    //unobserve just just before this object is deallocated
+    AudioSessionRemovePropertyListenerWithUserData(
+                                            kAudioSessionProperty_AudioRouteChange,
+                                            audioRouteChangeListenerCallback,
+                                            self);
+    
     [audioRingBuffers release];
     [super dealloc];
+}
+
+- (NSString*)getCurrentAudioRoute
+{
+    //possible returns: Headphones, Speaker or empty string
+    
+    CFDictionaryRef audioRoute;
+    UInt32 propSize = sizeof(audioRoute);
+    error = AudioSessionGetProperty(kAudioSessionProperty_AudioRouteDescription, &propSize, &audioRoute);
+    CheckError(error, "Error getting audio session!");
+    
+    NSDictionary *audioRouteDict = (NSDictionary*)audioRoute;
+    NSArray *outputsArray = [audioRouteDict objectForKey:@"RouteDetailedDescription_Outputs"];
+    NSDictionary *outputsDict = [outputsArray objectAtIndex:0];
+    NSString *hardware = [outputsDict objectForKey:@"RouteDetailedDescription_PortType"];
+    
+    return hardware;
 }
 
 @end

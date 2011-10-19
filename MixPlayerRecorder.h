@@ -85,4 +85,5 @@
 -(void)postNotificationForElapsedTime; //you don't have to call this manually
 -(bool)checkGraphStatus; //for testing purposes only
 
+- (NSString*)getCurrentAudioRoute;
 @end
