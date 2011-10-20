@@ -479,8 +479,8 @@ static OSStatus renderNotification(void *inRefCon,
     
     CFDictionaryRef audioRoute;
     UInt32 propSize = sizeof(audioRoute);
-    //error = AudioSessionGetProperty(kAudioSessionProperty_AudioRouteDescription, &propSize, &audioRoute);
-    //CheckError(error, "Error getting audio session!");
+    error = AudioSessionGetProperty(kAudioSessionProperty_AudioRouteDescription, &propSize, &audioRoute);
+    CheckError(error, "Error getting audio session!");
     
     NSDictionary *audioRouteDict = (NSDictionary*)audioRoute;
     NSArray *outputsArray = [audioRouteDict objectForKey:@"RouteDetailedDescription_Outputs"];
