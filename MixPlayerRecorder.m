@@ -26,14 +26,14 @@ void audioRouteChangeListenerCallback (
     NSRange speakerRange = [currentAudioRoute rangeOfString:@"Speaker"];
     if (speakerRange.location != NSNotFound)
     {
-        NSLog(@"now is Speaker");
+        //NSLog(@"now is Speaker");
         [thePlayer setMicVolume:0];
     }
     
     NSRange headphoneRange = [currentAudioRoute rangeOfString:@"Headphone"];
     if (headphoneRange.location != NSNotFound)
     {
-        NSLog(@"now is Headphone");
+        //NSLog(@"now is Headphone");
         [thePlayer setMicVolume:1];
     }
 }
@@ -319,12 +319,17 @@ static OSStatus renderNotification(void *inRefCon,
 //    printf("AUGraph stopped\n");
     
     //post notification
-    [[NSNotificationCenter defaultCenter] postNotificationName:kMixPlayerRecorderPlaybackStopped object:self];
+    //[[NSNotificationCenter defaultCenter] postNotificationName:kMixPlayerRecorderPlaybackStopped object:self];
     
     if (isRecording)
     {
         //stop recording too
         [self stopRecording];
+        
+        //post a notification if recording has stopped at the end
+        if (stoppedBecauseReachedEnd) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kMixPlayerRecorderRecordingHasReachedEnd object:self];
+        }
     }
     
     if (stoppedBecauseReachedEnd)
@@ -337,6 +342,10 @@ static OSStatus renderNotification(void *inRefCon,
         frameNum = 0;
         elapsedPlaybackTimeInSeconds = 0;
         stoppedBecauseReachedEnd = NO;
+
+        if (!isRecording) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kMixPlayerRecorderPlayingHasReachedEnd object:self];
+        }
     }
 }
 

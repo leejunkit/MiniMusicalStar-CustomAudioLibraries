@@ -15,6 +15,8 @@
 #define kMixPlayerRecorderPlaybackStarted @"kMixPlayerRecorderPlaybackStarted"
 #define kMixPlayerRecorderPlaybackStopped @"kMixPlayerRecorderPlaybackStopped"
 #define kMixPlayerRecorderPlaybackElapsedTimeAdvanced @"kMixPlayerRecorderPlaybackElapsedTimeAdvanced"
+#define kMixPlayerRecorderRecordingHasReachedEnd @"kMixPlayerRecorderRecordingHasReachedEnd"
+#define kMixPlayerRecorderPlayingHasReachedEnd @"kMixPlayerRecorderPlayingHasReachedEnd"
 
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/AudioToolbox.h>
