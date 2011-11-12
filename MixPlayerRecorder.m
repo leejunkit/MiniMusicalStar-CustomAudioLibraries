@@ -465,7 +465,7 @@ static OSStatus renderNotification(void *inRefCon,
         elapsedPlaybackTimeInSeconds = tempElapsedTime;
         
         //send notification
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMixPlayerRecorderPlaybackElapsedTimeAdvanced object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMixPlayerRecorderPlaybackElapsedTimeAdvanced object:self];
     }
 
 }
