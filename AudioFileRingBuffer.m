@@ -82,7 +82,7 @@
         error = ExtAudioFileRead(xafref, &inNumFrames, &tempBufList);
         if (error)
         {
-            printf("ExtAudioFileRead result %ld %08X %4.4s\n", error, (unsigned int)error, (char*)&error); 
+            //printf("ExtAudioFileRead result %ld %08X %4.4s\n", error, (unsigned int)error, (char*)&error); 
             free(tempBufList.mBuffers[0].mData);
             tempBufList.mBuffers[0].mData = 0;
             return;
@@ -118,6 +118,7 @@
         //printf("just before buffer lock for consumption\n");
         [bufferRecordLock lock];
         SInt16 *tempBuffer = buffer + TPCircularBufferTail(&bufferRecord);
+        printf("%p and %i", buffer, TPCircularBufferTail(&bufferRecord));
         TPCircularBufferConsume(&bufferRecord, samplesToRead);
         samplesToRead = 0;
         
