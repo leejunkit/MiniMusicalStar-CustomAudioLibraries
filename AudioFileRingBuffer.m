@@ -118,7 +118,7 @@
         //printf("just before buffer lock for consumption\n");
         [bufferRecordLock lock];
         SInt16 *tempBuffer = buffer + TPCircularBufferTail(&bufferRecord);
-        printf("%p and %i", buffer, TPCircularBufferTail(&bufferRecord));
+        //printf("%p and %i", buffer, TPCircularBufferTail(&bufferRecord));
         TPCircularBufferConsume(&bufferRecord, samplesToRead);
         samplesToRead = 0;
         
