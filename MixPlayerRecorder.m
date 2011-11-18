@@ -21,21 +21,7 @@ void audioRouteChangeListenerCallback (
     
     MixPlayerRecorder *thePlayer = (MixPlayerRecorder*)inUserData;
     
-    NSString *currentAudioRoute = [thePlayer getCurrentAudioRoute];
-    
-    NSRange speakerRange = [currentAudioRoute rangeOfString:@"Speaker"];
-    if (speakerRange.location != NSNotFound)
-    {
-        //NSLog(@"now is Speaker");
-        [thePlayer setMicVolume:0];
-    }
-    
-    NSRange headphoneRange = [currentAudioRoute rangeOfString:@"Headphone"];
-    if (headphoneRange.location != NSNotFound)
-    {
-        //NSLog(@"now is Headphone");
-        [thePlayer setMicVolume:1];
-    }
+    [thePlayer postNotificationForAudioRouteChange];
 }
 
 
@@ -497,6 +483,31 @@ static OSStatus renderNotification(void *inRefCon,
     NSString *hardware = [outputsDict objectForKey:@"RouteDetailedDescription_PortType"];
     
     return hardware;
+}
+
+- (NSString*)checkHardwareAndAdjustVolume
+{
+    NSString *currentAudioRoute = [self getCurrentAudioRoute];
+    
+    NSRange speakerRange = [currentAudioRoute rangeOfString:@"Speaker"];
+    NSRange headphoneRange = [currentAudioRoute rangeOfString:@"Headphone"];
+    
+    if (currentAudioRoute == nil) {
+        return @"SIMULATOR";
+        
+    } else if (speakerRange.location != NSNotFound) {
+        return @"SPEAKER";
+        
+    } else if (headphoneRange.location != NSNotFound) {
+        return @"HEADPHONE";
+    } 
+              
+    return @"ERROR";
+}
+
+- (void)postNotificationForAudioRouteChange
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:kMixPlayerRecorderAudioRouteHasChanged object:self];
 }
 
 @end

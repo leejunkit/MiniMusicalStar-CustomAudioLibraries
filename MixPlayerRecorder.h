@@ -17,6 +17,7 @@
 #define kMixPlayerRecorderPlaybackElapsedTimeAdvanced @"kMixPlayerRecorderPlaybackElapsedTimeAdvanced"
 #define kMixPlayerRecorderRecordingHasReachedEnd @"kMixPlayerRecorderRecordingHasReachedEnd"
 #define kMixPlayerRecorderPlayingHasReachedEnd @"kMixPlayerRecorderPlayingHasReachedEnd"
+#define kMixPlayerRecorderAudioRouteHasChanged @"kMixPlayerRecorderAudioRouteHasChanged"
 
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/AudioToolbox.h>
@@ -51,7 +52,6 @@
     UInt32 totalPlaybackTimeInSeconds;
     UInt32 elapsedPlaybackTimeInSeconds;
     bool isPlaying;
-    
 }
 
 @property (nonatomic, readonly) int numInputFiles;
@@ -88,4 +88,6 @@
 -(bool)checkGraphStatus; //for testing purposes only
 
 - (NSString*)getCurrentAudioRoute;
+- (NSString*)checkHardwareAndAdjustVolume;
+- (void)postNotificationForAudioRouteChange;
 @end
