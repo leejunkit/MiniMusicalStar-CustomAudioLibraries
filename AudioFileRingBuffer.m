@@ -74,7 +74,7 @@
     {
         //if there are no more frames to read, just put silence into the buffers
         memset(tempBufList.mBuffers[0].mData, 0, tempBufList.mBuffers[0].mDataByteSize);
-        //printf("Filling buffers with silence because there is nothing left to read for this audio file.\n");
+        printf("Filling buffers with silence because there is nothing left to read for this audio file.\n");
     }
     
     else
