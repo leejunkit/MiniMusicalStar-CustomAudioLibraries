@@ -38,7 +38,7 @@
     propSize = sizeof(numFrames);
     error = ExtAudioFileGetProperty(xafref, kExtAudioFileProperty_FileLengthFrames, &propSize, &numFrames);
     CheckError(error, "cannot get file's length in sample frames");
-    
+    NSLog(@"numFrames for %@ is %llu", audioFile, numFrames);
     canStartReading = YES;
     
 }
@@ -74,7 +74,9 @@
     {
         //if there are no more frames to read, just put silence into the buffers
         memset(tempBufList.mBuffers[0].mData, 0, tempBufList.mBuffers[0].mDataByteSize);
-        printf("Filling buffers with silence because there is nothing left to read for this audio file.\n");
+        //NSLog(@"audio file for this buffer is %@", audioFile);
+        //NSLog(@"numFrames is %llu", numFrames);
+        //printf("Filling buffers with silence because there is nothing left to read for this audio file.\n");
     }
     
     else
@@ -93,7 +95,11 @@
     }
     
     //check inNumFrames, if it's now 0 (the ExtAudioFileRead sets it as such when there's nothing else to read, toggle finishedReading to YES
-    if (inNumFrames == 0) finishedReading = YES;
+    if (inNumFrames == 0)
+    {
+        NSLog(@"inNumFrames is now 0");
+        finishedReading = YES;
+    }
     
     //take a lock on the buffer and push the contents of the temp buffer into the ringbuffer
     [bufferRecordLock lock];
@@ -150,6 +156,9 @@
 
 - (void)moveReadPositionOfAudioFileToFrame:(SInt64)targetFrame
 {
+    //clear the ring buffer
+    TPCircularBufferClear(&bufferRecord);
+    
     //check if new targetFrame is less than numFrames
     if (targetFrame >= numFrames) {
         currentFrameNum = numFrames;
@@ -157,16 +166,27 @@
     }
     
     else {
+        
+        if (finishedReading)
+        {
+            [self reset];
+        }
+        
         //change the seek position
         error = ExtAudioFileSeek(xafref, targetFrame);
         CheckError(error, "Cannot change seek location of audio file.");
         
         //set the current frame to the new targetFrame
         currentFrameNum = targetFrame;
+        
+        //turn off the finishedReading flag
+        finishedReading = NO;
+        
+        
+
     }
     
-    //clear the ring buffer
-    TPCircularBufferClear(&bufferRecord);
+
     
 }
 
@@ -177,7 +197,7 @@
     
     currentFrameNum = 0;
     canStartReading = NO;
-    finishedReading =NO;
+    finishedReading = NO;
     
     //recreate the ring buffer
     //init the bufferRecord and malloc the ringbuffer
