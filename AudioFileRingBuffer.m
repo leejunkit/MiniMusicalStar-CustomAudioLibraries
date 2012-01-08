@@ -38,7 +38,7 @@
     propSize = sizeof(numFrames);
     error = ExtAudioFileGetProperty(xafref, kExtAudioFileProperty_FileLengthFrames, &propSize, &numFrames);
     CheckError(error, "cannot get file's length in sample frames");
-    NSLog(@"numFrames for %@ is %llu", audioFile, numFrames);
+//    NSLog(@"numFrames for %@ is %llu", audioFile, numFrames);
     canStartReading = YES;
     
 }
